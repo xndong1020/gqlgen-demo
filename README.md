@@ -1,3 +1,41 @@
+#### step 01: init project
+
+```
+go mod init acy.com/gqlgendemo
+```
+
+to generate go.mod
+Then we get a `go.mod` file which is similar to package.json in JS, details as below.
+
+```go
+// acy.com is a name space to avoid duplicate names after publish
+module acy.com/gqlgendemo
+
+go 1.17
+```
+
+#### step 02: install gqlgen
+
+source: [github](https://github.com/99designs/gqlgen)
+
+```
+printf '// +build tools\npackage tools\nimport _ "github.com/99designs/gqlgen"' | gofmt > tools.go
+go mod tidy
+```
+
+This will generate tools.go, and install dependencies in go.mod
+
+#### step 03: init project by running gqlgen init
+
+```
+go run github.com/99designs/gqlgen init
+```
+
+This will generate a `server.go` under root directory, and a `graph` folder.
+
+#### Step 03. update graphql schema
+
+update `graph/schema.graphqls` with our own schema
 ### Create schema
 
 ```gql

@@ -4,15 +4,20 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"acy.com/gqlgendemo/database"
 	"acy.com/gqlgendemo/graph"
 	"acy.com/gqlgendemo/graph/generated"
+	"acy.com/gqlgendemo/graph/model"
 	"acy.com/gqlgendemo/repository"
 	"acy.com/gqlgendemo/service"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gorilla/websocket"
 
 	"github.com/joho/godotenv"
 
@@ -57,9 +62,23 @@ func main() {
 		Debug:            true,
 	}).Handler)
 
-	server := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
+	// https://github.com/99designs/gqlgen/issues/1328
+	server := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		BookService: service.NewBookService(repository.NewBookRepository(db)),
+		ChatMessages: []*model.Message{},
+    	ChatObservers: map[string]chan []*model.Message{},
 	}}))
+
+	server.AddTransport(transport.POST{})
+	server.AddTransport(transport.Websocket{
+		KeepAlivePingInterval: 10 * time.Second,
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+	})
+	server.Use(extension.Introspection{})
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	router.Handle("/query", server)

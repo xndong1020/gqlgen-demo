@@ -10,12 +10,24 @@ input BookInput {
   author: String!
   publisher: String!
 }
+
+type Message {
+  id: ID!
+  user: String!
+  content: String!
+}
+
 type Mutation {
   CreateBook(input: BookInput!): Book!
   DeleteBook(id: Int!): String!
   UpdateBook(id: Int!, input: BookInput!): String!
+  PostMessage(user: String!, content: String!): ID!
 }
 type Query {
   GetAllBooks: [Book!]!
   GetOneBook(id: Int!): Book!
+}
+
+type Subscription {
+  messages: [Message!]
 }

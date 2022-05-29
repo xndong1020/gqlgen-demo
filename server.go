@@ -62,6 +62,7 @@ func main() {
 	}}))
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", server)
 	router.Handle("/graphql", server)
 
 	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
